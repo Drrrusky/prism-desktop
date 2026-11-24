@@ -388,7 +388,7 @@ private val GOOGLE_SIZE = Regex("=(w\\d+-h\\d+|s\\d+)[^/]*$")
 private val YTIMG_NAME = Regex("/[a-z0-9_]+default\\.jpg.*$")
 
 /** "1 song", "12 songs". */
-fun songCount(n: Int): String = com.prism.music.trp(com.prism.music.R.plurals.n_songs, n)
+fun songCount(n: Int): String = ModelText.current.songCount(n)
 
 fun formatDuration(sec: Int): String {
     if (sec <= 0) return ""
@@ -423,20 +423,7 @@ fun shownKinds(subtitle: String): String {
 /** YouTube's release kinds, in the English Prism reads them in ([com.prism.music.data.innertube.Parser]), never shown as they are. */
 val RELEASE_KINDS = setOf("Album", "Single", "EP")
 
-fun kindName(kind: String): String? = when (kind) {
-    "Song" -> com.prism.music.R.string.kind_song
-    "Video" -> com.prism.music.R.string.kind_video
-    "Album" -> com.prism.music.R.string.kind_album
-    "Single" -> com.prism.music.R.string.kind_single
-    "EP" -> com.prism.music.R.string.kind_ep
-    "Artist" -> com.prism.music.R.string.kind_artist
-    "Playlist" -> com.prism.music.R.string.kind_playlist
-    "Episode" -> com.prism.music.R.string.kind_episode
-    "Podcast" -> com.prism.music.R.string.kind_podcast
-    "Profile" -> com.prism.music.R.string.kind_profile
-    "Station" -> com.prism.music.R.string.kind_station
-    else -> null
-}?.let { com.prism.music.tr(it) }
+fun kindName(kind: String): String? = ModelText.current.kind(kind)
 
 /** A song's Related tab (1.7.9): songs YouTube Music puts beside it, and artists like its own. */
 data class Related(val songs: List<Song>, val artists: List<ArtistItem>)

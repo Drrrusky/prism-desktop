@@ -121,6 +121,8 @@ class PrismApp : Application(), coil3.SingletonImageLoader.Factory {
         super.onCreate()
         // Before anything shows a word: Prism's text in the listener's language (Strings.kt).
         Strings.resources = resources
+        // Models.kt's words (kind names, song counts) come from the same place on Android.
+        com.prism.music.data.model.ModelText.install(com.prism.music.data.model.AndroidModelText)
         language = AppLanguage.shown(this)
         // A crash's details kept on the phone (Settings → About → Diagnostics), from the very start.
         CrashLog.install(this)
