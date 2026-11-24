@@ -181,7 +181,16 @@ fun List<Shelf>.speedDial(owner: String? = null): Shelf? = firstOrNull { it.titl
 
 /** For the diagnostics log (#372): Speed dial's tiles in YouTube's own order, by kind. */
 fun List<Shelf>.speedDialOrderLine(owner: String? = null): String =
-    "; Speed dial's order: " + speedDial(owner)?.items.orEmpty().take(12).joinToString(" ") { it.javaClass.simpleName.removeSuffix("Item").lowercase() }
+    "; Speed dial's order: " + speedDial(owner)?.items.orEmpty().take(12).joinToString(" ") { item ->
+        when (item) {
+            is SongItem -> "song"
+            is AlbumItem -> "album"
+            is PlaylistItem -> "playlist"
+            is ArtistItem -> "artist"
+            is PodcastItem -> "podcast"
+            is MoodItem -> "mood"
+        }
+    }
 
 /**
  * Found by its shape (another language): a shelf headed with your name, else one stacked a few per column; of several,
@@ -395,7 +404,9 @@ fun formatDuration(sec: Int): String {
     val h = sec / 3600
     val m = (sec % 3600) / 60
     val s = sec % 60
-    return if (h > 0) "%d:%02d:%02d".format(h, m, s) else "%d:%02d".format(m, s)
+    val minutes = m.toString().padStart(2, '0')
+    val seconds = s.toString().padStart(2, '0')
+    return if (h > 0) "$h:$minutes:$seconds" else "$minutes:$seconds"
 }
 
 fun parseDuration(text: String?): Int {
