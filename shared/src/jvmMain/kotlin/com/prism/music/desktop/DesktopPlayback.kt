@@ -31,6 +31,12 @@ object DesktopPlayback {
     private val preferences = Preferences.userNodeForPackage(DesktopPlayback::class.java)
     private val queueFile = Path.of(System.getProperty("user.home"), ".prism", "desktop-queue.txt")
     private val supportedExtensions = setOf("wav", "mp3", "aiff", "aif", "au")
+    private val favoritesFile = Path.of(System.getProperty("user.home"), ".prism", "favorites.txt")
+    val favorites = mutableStateListOf<String>()
+    var volume by mutableStateOf(preferences.getFloat("volume", 0.8f).coerceIn(0f, 1f))
+        private set
+    var repeatOne by mutableStateOf(false)
+        private set
 
     init {
         val restored = try {
@@ -44,6 +50,9 @@ object DesktopPlayback {
             emptyList()
         }
         queue.addAll(restored)
+        try {
+            if (Files.isRegularFile(favoritesFile)) favorites.addAll(Files.readAllLines(favoritesFile, Charsets.UTF_8).filter { it.isNotBlank() })
+        } catch (_: Exception) { }
         currentIndex = preferences.getInt("currentIndex", 0).coerceIn(-1, queue.lastIndex)
     }
 
@@ -59,6 +68,35 @@ object DesktopPlayback {
 
     val currentTrack: File?
         get() = queue.getOrNull(currentIndex)
+
+    fun isFavorite(file: File?): Boolean = file?.absolutePath in favorites
+
+    fun toggleFavorite(file: File? = currentTrack) {
+        val path = file?.absolutePath ?: return
+        if (path in favorites) favorites.remove(path) else favorites.add(path)
+        try {
+            Files.createDirectories(favoritesFile.parent)
+            Files.write(favoritesFile, favorites, Charsets.UTF_8)
+            errorMessage = null
+        } catch (e: Exception) { errorMessage = e.message ?: "Impossible d’enregistrer les favoris." }
+    }
+
+    fun setVolume(value: Float) {
+        volume = value.coerceIn(0f, 1f)
+        preferences.putFloat("volume", volume)
+        applyVolume()
+    }
+
+    fun toggleRepeatOne() { repeatOne = !repeatOne }
+
+    private fun applyVolume() {
+        val active = clip ?: return
+        try {
+            val control = active.getControl(javax.sound.sampled.FloatControl.Type.MASTER_GAIN) as javax.sound.sampled.FloatControl
+            val gain = if (volume <= 0.001f) control.minimum else (20f * kotlin.math.log10(volume)).coerceIn(control.minimum, control.maximum)
+            control.value = gain
+        } catch (_: Exception) { }
+    }
 
     fun chooseAndAdd() {
         val chooser = JFileChooser().apply {
@@ -301,13 +339,20 @@ object DesktopPlayback {
             ) {
                 javax.swing.SwingUtilities.invokeLater {
                     if (clip === newClip) {
-                        isPlaying = false
-                        if (currentIndex in 0 until queue.lastIndex) playIndex(currentIndex + 1)
+                        if (repeatOne) {
+                            newClip.microsecondPosition = 0
+                            newClip.start()
+                            isPlaying = true
+                        } else {
+                            isPlaying = false
+                            if (currentIndex in 0 until queue.lastIndex) playIndex(currentIndex + 1)
+                        }
                     }
                 }
             }
         }
         clip = newClip
+        applyVolume()
         newClip.start()
         isPlaying = true
         errorMessage = null
