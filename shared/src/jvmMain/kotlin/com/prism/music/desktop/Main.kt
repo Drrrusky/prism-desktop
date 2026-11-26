@@ -294,6 +294,16 @@ private fun LibraryPage() {
             Button(onClick = DesktopPlayback::importPlaylist) { Text("Importer M3U") }
             Button(onClick = DesktopPlayback::exportPlaylist, enabled = DesktopPlayback.queue.isNotEmpty()) { Text("Exporter") }
         }
+        Button(onClick = DesktopPlayback::saveQueueAsPlaylist, enabled = DesktopPlayback.queue.isNotEmpty()) { Text("Enregistrer la file comme playlist") }
+        Text("Playlists enregistrées", style = MaterialTheme.typography.titleLarge)
+        DesktopPlayback.savedPlaylists().forEach { playlist ->
+            TrackRow(
+                title = playlist.nameWithoutExtension,
+                subtitle = "Playlist locale · ${playlist.name}",
+                active = false,
+                onPlay = { DesktopPlayback.loadSavedPlaylist(playlist) }
+            )
+        }
         if (DesktopPlayback.queue.isEmpty()) {
             EmptyState("Aucun morceau pour le moment", "Ajoutez vos fichiers audio ou importez une playlist M3U.")
         } else {
