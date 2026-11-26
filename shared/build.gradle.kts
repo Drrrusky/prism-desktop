@@ -1,6 +1,5 @@
-
-
 plugins {
+
     id("org.jetbrains.kotlin.multiplatform")
     id("com.android.kotlin.multiplatform.library")
     id("org.jetbrains.compose")
@@ -26,6 +25,8 @@ kotlin {
 
         jvmMain.dependencies {
             implementation(compose.desktop.currentOs)
+            // Java Sound SPI decoder for MP3 input.
+            implementation("com.googlecode.soundlibs:mp3spi:1.9.5.4")
         }
     }
 }
