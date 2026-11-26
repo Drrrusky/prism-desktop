@@ -238,7 +238,7 @@ object DesktopPlayback {
         try {
             val base = playlist.toPath().toAbsolutePath().parent
             val tracks = Files.readAllLines(playlist.toPath()).asSequence()
-                .map(String::trim).map { it.removePrefix("\\uFEFF") }
+                .map(String::trim).map { it.removePrefix("\uFEFF") }
                 .filter { it.isNotEmpty() && !it.startsWith("#") }
                 .map { entry -> val path = Path.of(entry); if (path.isAbsolute) path.toFile() else base.resolve(path).normalize().toFile() }
                 .filter { it.isFile && it.extension.lowercase() in supportedExtensions }.toList()
