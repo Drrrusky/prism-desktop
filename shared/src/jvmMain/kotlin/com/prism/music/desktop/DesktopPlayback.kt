@@ -28,20 +28,32 @@ object DesktopPlayback {
 
     private var clip: Clip? = null
     private val preferences = Preferences.userNodeForPackage(DesktopPlayback::class.java)
+    private val queueFile = Path.of(System.getProperty("user.home"), ".prism", "desktop-queue.txt")
     private val supportedExtensions = setOf("wav", "mp3", "aiff", "aif", "au")
 
     init {
-        val restored = preferences.get("queue", "").split("\n")
-            .filter { it.isNotBlank() }
-            .map(::File)
-            .filter { it.isFile && it.extension.lowercase() in supportedExtensions }
+        val restored = try {
+            if (Files.isRegularFile(queueFile)) {
+                Files.readAllLines(queueFile, Charsets.UTF_8)
+                    .filter { it.isNotBlank() }
+                    .map(::File)
+                    .filter { it.isFile && it.extension.lowercase() in supportedExtensions }
+            } else emptyList()
+        } catch (_: Exception) {
+            emptyList()
+        }
         queue.addAll(restored)
         currentIndex = preferences.getInt("currentIndex", 0).coerceIn(-1, queue.lastIndex)
     }
 
     private fun persistQueue() {
-        preferences.put("queue", queue.joinToString("\n") { it.absolutePath })
-        preferences.putInt("currentIndex", currentIndex)
+        try {
+            Files.createDirectories(queueFile.parent)
+            Files.write(queueFile, queue.map { it.absolutePath }, Charsets.UTF_8)
+            preferences.putInt("currentIndex", currentIndex)
+        } catch (e: Exception) {
+            errorMessage = e.message ?: "Impossible d’enregistrer la file de lecture."
+        }
     }
 
     val currentTrack: File?
