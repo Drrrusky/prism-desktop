@@ -346,7 +346,7 @@ private fun LibraryPage() {
 
 @Composable
 private fun FavoritesPage() {
-    val favoriteFiles = DesktopPlayback.favorites.map(::java.io.File).filter { it.isFile }
+    val favoriteFiles = DesktopPlayback.favorites.map { java.io.File(it) }.filter { it.isFile }
     Column(Modifier.fillMaxSize(), verticalArrangement = Arrangement.spacedBy(12.dp)) {
         Text("${favoriteFiles.size} titre(s) favori(s)", style = MaterialTheme.typography.titleLarge)
         if (favoriteFiles.isEmpty()) {
@@ -400,7 +400,12 @@ private fun TrackRow(
                 Text(title, style = MaterialTheme.typography.titleSmall, maxLines = 1)
                 Text(subtitle, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 1)
             }
-            Button(onClick = onPlay) { Text(if (active && DesktopPlayback.isPlaying) "En cours" else "Lire") }
+            Button(
+                onClick = {
+                    if (active && DesktopPlayback.isPlaying) DesktopPlayback.playPause()
+                    else onPlay()
+                }
+            ) { Text(if (active && DesktopPlayback.isPlaying) "Pause" else if (active) "En cours" else "Lire") }
         }
     }
 }
