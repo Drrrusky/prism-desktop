@@ -118,6 +118,35 @@ object DesktopPlayback {
         }
     }
 
+    fun chooseFolderAndAdd() {
+        val chooser = JFileChooser().apply {
+            dialogTitle = "Ajouter un dossier de musique"
+            fileSelectionMode = JFileChooser.DIRECTORIES_ONLY
+        }
+        if (chooser.showOpenDialog(null) == JFileChooser.APPROVE_OPTION) {
+            addFolder(chooser.selectedFile)
+        }
+    }
+
+    fun addFolder(folder: File) {
+        if (!folder.isDirectory) {
+            errorMessage = "Sélectionnez un dossier valide."
+            return
+        }
+        try {
+            val discovered = Files.walk(folder.toPath()).use { paths ->
+                paths.filter { Files.isRegularFile(it) }
+                    .map(Path::toFile)
+                    .filter { it.extension.lowercase() in supportedExtensions }
+                    .toList()
+            }
+            addFiles(discovered)
+            if (discovered.isEmpty()) errorMessage = "Aucun fichier audio pris en charge dans ce dossier."
+        } catch (e: Exception) {
+            errorMessage = e.message ?: "Impossible de parcourir ce dossier."
+        }
+    }
+
     fun addFiles(files: List<File>) {
         val accepted = files.filter { it.isFile && it.extension.lowercase() in supportedExtensions }
         queue.addAll(accepted.filterNot { it in queue })
