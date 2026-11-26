@@ -428,7 +428,9 @@ private fun PlayerBar() {
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
+            Row(horizontalArrangement = Arrangement.spacedBy(4.dp), verticalAlignment = Alignment.CenterVertically) {
+                TextButton(onClick = DesktopPlayback::toggleShuffle) { Text(if (DesktopPlayback.shuffleEnabled) "🔀 ON" else "🔀") }
+                TextButton(onClick = DesktopPlayback::toggleRepeat) { Text(if (DesktopPlayback.repeatEnabled) "🔁 ON" else "🔁") }
                 Button(onClick = DesktopPlayback::previous, enabled = DesktopPlayback.queue.isNotEmpty()) { Text("⏮") }
                 Button(
                     onClick = DesktopPlayback::playPause,
