@@ -6,6 +6,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import java.io.File
 import java.util.prefs.Preferences
+import java.nio.file.Files
+import java.nio.file.Path
 import javax.sound.sampled.AudioSystem
 import javax.sound.sampled.Clip
 import javax.swing.JFileChooser
@@ -63,6 +65,69 @@ object DesktopPlayback {
         queue.addAll(accepted.filterNot { it in queue })
         errorMessage = null
         if (currentIndex < 0 && queue.isNotEmpty()) currentIndex = 0
+    }
+
+    fun importPlaylist() {
+        val chooser = JFileChooser().apply {
+            dialogTitle = "Importer une playlist M3U"
+            fileFilter = FileNameExtensionFilter("Playlists M3U (*.m3u, *.m3u8)", "m3u", "m3u8")
+        }
+        if (chooser.showOpenDialog(null) != JFileChooser.APPROVE_OPTION) return
+        try {
+            val playlistFile = chooser.selectedFile.toPath()
+            val base = playlistFile.toAbsolutePath().parent
+            val imported = Files.readAllLines(playlistFile).asSequence()
+                .map(String::trim)
+                .filter { it.isNotEmpty() && !it.startsWith("#") }
+                .map { entry ->
+                    val path = Path.of(entry)
+                    if (path.isAbsolute) path.toFile() else base.resolve(path).normalize().toFile()
+                }
+                .filter { it.isFile && it.extension.lowercase() in supportedExtensions }
+                .toList()
+            addFiles(imported)
+            if (imported.isEmpty()) errorMessage = "La playlist ne contient aucun fichier audio local pris en charge."
+        } catch (e: Exception) {
+            errorMessage = e.message ?: "Impossible d’importer cette playlist."
+        }
+    }
+
+    fun exportPlaylist() {
+        if (queue.isEmpty()) {
+            errorMessage = "La file de lecture est vide."
+            return
+        }
+        val chooser = JFileChooser().apply {
+            dialogTitle = "Exporter la file en playlist M3U"
+            dialogType = JFileChooser.SAVE_DIALOG
+            selectedFile = File("Prism-playlist.m3u8")
+            fileFilter = FileNameExtensionFilter("Playlist M3U8 (*.m3u8)", "m3u8")
+        }
+        if (chooser.showSaveDialog(null) != JFileChooser.APPROVE_OPTION) return
+        try {
+            val selected = chooser.selectedFile.toPath()
+            val destination = (if (selected.fileName.toString().endsWith(".m3u8", ignoreCase = true)) selected else Path.of("$selected.m3u8")).toAbsolutePath()
+            val parent = destination.parent
+            val lines = buildList {
+                add("#EXTM3U")
+                queue.forEach { file ->
+                    val path = file.toPath().toAbsolutePath()
+                    add(if (parent != null) parent.relativize(path).toString() else path.toString())
+                }
+            }
+            Files.write(destination, lines, Charsets.UTF_8)
+            errorMessage = null
+        } catch (e: Exception) {
+            errorMessage = e.message ?: "Impossible d’exporter la playlist."
+        }
+    }
+
+    fun clearQueue() {
+        stopAndClose()
+        queue.clear()
+        currentIndex = -1
+        persistQueue()
+        errorMessage = null
     }
 
     fun playPause() {
