@@ -5,6 +5,7 @@ import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import java.io.File
+import java.util.prefs.Preferences
 import javax.sound.sampled.AudioSystem
 import javax.sound.sampled.Clip
 import javax.swing.JFileChooser
@@ -24,6 +25,21 @@ object DesktopPlayback {
         private set
 
     private var clip: Clip? = null
+    private val preferences = Preferences.userNodeForPackage(DesktopPlayback::class.java)
+
+    init {
+        val restored = preferences.get("queue", "").split("\\n")
+            .filter { it.isNotBlank() }
+            .map(::File)
+            .filter { it.isFile && it.extension.lowercase() in supportedExtensions }
+        queue.addAll(restored)
+        currentIndex = preferences.getInt("currentIndex", 0).coerceIn(-1, queue.lastIndex)
+    }
+
+    private fun persistQueue() {
+        preferences.put("queue", queue.joinToString("\\n") { it.absolutePath })
+        preferences.putInt("currentIndex", currentIndex)
+    }
 
     val currentTrack: File?
         get() = queue.getOrNull(currentIndex)
