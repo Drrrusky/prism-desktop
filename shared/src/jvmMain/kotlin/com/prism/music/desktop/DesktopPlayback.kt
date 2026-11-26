@@ -80,6 +80,7 @@ object DesktopPlayback {
             val base = playlistFile.toAbsolutePath().parent
             val imported = Files.readAllLines(playlistFile).asSequence()
                 .map(String::trim)
+                .map { it.removePrefix("\uFEFF") }
                 .filter { it.isNotEmpty() && !it.startsWith("#") }
                 .map { entry ->
                     val path = Path.of(entry)
@@ -114,7 +115,7 @@ object DesktopPlayback {
                 add("#EXTM3U")
                 queue.forEach { file ->
                     val path = file.toPath().toAbsolutePath()
-                    add(if (parent != null) parent.relativize(path).toString() else path.toString())
+                    add(if (parent != null && parent.root == path.root) parent.relativize(path).toString() else path.toString())
                 }
             }
             Files.write(destination, lines, Charsets.UTF_8)
