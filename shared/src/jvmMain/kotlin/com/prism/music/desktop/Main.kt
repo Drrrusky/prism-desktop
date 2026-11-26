@@ -133,9 +133,16 @@ private fun SearchPage() {
 
 @Composable
 private fun LibraryPage() {
-    Row(verticalAlignment = Alignment.CenterVertically) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
         Text("Fichiers de la file de lecture", modifier = Modifier.weight(1f))
         Button(onClick = DesktopPlayback::chooseAndAdd) { Text("Ajouter") }
+        Button(onClick = DesktopPlayback::importPlaylist) { Text("Importer M3U") }
+        Button(onClick = DesktopPlayback::exportPlaylist, enabled = DesktopPlayback.queue.isNotEmpty()) { Text("Exporter M3U") }
+        Button(onClick = DesktopPlayback::clearQueue, enabled = DesktopPlayback.queue.isNotEmpty()) { Text("Vider") }
     }
     if (DesktopPlayback.queue.isEmpty()) {
         Text("Aucun fichier ajouté. Utilisez « Ajouter » pour choisir vos fichiers audio.")
