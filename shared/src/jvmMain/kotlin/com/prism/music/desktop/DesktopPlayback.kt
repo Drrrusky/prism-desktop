@@ -28,6 +28,7 @@ object DesktopPlayback {
 
     private var clip: Clip? = null
     private val preferences = Preferences.userNodeForPackage(DesktopPlayback::class.java)
+    private val supportedExtensions = setOf("wav", "mp3", "aiff", "aif", "au")
 
     init {
         val restored = preferences.get("queue", "").split("\n")
@@ -262,5 +263,4 @@ object DesktopPlayback {
         isPlaying = false
     }
 
-    private val supportedExtensions = setOf("wav", "mp3", "aiff", "aif", "au")
 }
