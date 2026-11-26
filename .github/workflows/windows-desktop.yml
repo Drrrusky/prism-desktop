@@ -1,0 +1,35 @@
+name: Windows desktop build
+
+on:
+  push:
+    branches: [windows-port-source]
+  pull_request:
+    branches: [windows-port-source]
+  workflow_dispatch:
+
+jobs:
+  desktop-jvm:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Build desktop JVM module
+        shell: pwsh
+        run: .\gradlew.bat :shared:compileKotlinJvm :shared:jvmJar
+
+      - name: Upload desktop JVM jar
+        uses: actions/upload-artifact@v4
+        with:
+          name: Prism-Desktop-JVM
+          path: shared/build/libs/*jvm*.jar
+          if-no-files-found: warn
