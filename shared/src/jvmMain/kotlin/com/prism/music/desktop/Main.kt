@@ -402,10 +402,10 @@ private fun TrackRow(
             }
             Button(
                 onClick = {
-                    if (active && DesktopPlayback.isPlaying) DesktopPlayback.playPause()
+                    if (active) DesktopPlayback.playPause()
                     else onPlay()
                 }
-            ) { Text(if (active && DesktopPlayback.isPlaying) "Pause" else if (active) "En cours" else "Lire") }
+            ) { Text(if (active && DesktopPlayback.isPlaying) "Pause" else "Lire") }
         }
     }
 }
