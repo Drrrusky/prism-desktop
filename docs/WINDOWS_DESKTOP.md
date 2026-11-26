@@ -27,7 +27,7 @@ Run the desktop app from the repository root:
 .\gradlew.bat :shared:run
 ```
 
-The Windows GitHub Actions workflow builds the desktop JVM module and uploads its JAR when the build succeeds.
+For development, you can still run the desktop app from the repository root:
 
 ## Not implemented yet
 
