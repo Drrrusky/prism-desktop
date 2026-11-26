@@ -46,6 +46,7 @@ private enum class DesktopPage(val label: String, val symbol: String) {
     Home("Accueil", "⌂"),
     Search("Recherche", "⌕"),
     Library("Bibliothèque", "♫"),
+    Favorites("Favoris", "♥"),
     Settings("Paramètres", "⚙")
 }
 
@@ -119,6 +120,7 @@ private fun PrismDesktopApp() {
                         )
                         DesktopPage.Search -> SearchPage(searchQuery, onQueryChange = { searchQuery = it })
                         DesktopPage.Library -> LibraryPage()
+                        DesktopPage.Favorites -> FavoritesPage()
                         DesktopPage.Settings -> SettingsPage()
                     }
                 }
@@ -331,6 +333,31 @@ private fun LibraryPage() {
 }
 
 @Composable
+private fun FavoritesPage() {
+    val favoriteFiles = DesktopPlayback.favorites.map(::java.io.File).filter { it.isFile }
+    Column(Modifier.fillMaxSize(), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+        Text("${favoriteFiles.size} titre(s) favori(s)", style = MaterialTheme.typography.titleLarge)
+        if (favoriteFiles.isEmpty()) {
+            EmptyState("Pas encore de favoris", "Utilisez le cœur dans le lecteur pour garder vos titres préférés.")
+        } else {
+            LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                itemsIndexed(favoriteFiles) { _, file ->
+                    TrackRow(
+                        title = file.nameWithoutExtension,
+                        subtitle = file.parent ?: "Fichier local",
+                        active = file == DesktopPlayback.currentTrack,
+                        onPlay = { DesktopPlayback.playIndex(DesktopPlayback.queue.indexOf(file).takeIf { it >= 0 } ?: run {
+                            DesktopPlayback.addFiles(listOf(file))
+                            DesktopPlayback.queue.indexOf(file)
+                        }) }
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
 private fun TrackRow(
     title: String,
     subtitle: String,
@@ -439,8 +466,14 @@ private fun PlayerBar() {
                 )
             }
             Row(horizontalArrangement = Arrangement.spacedBy(4.dp), verticalAlignment = Alignment.CenterVertically) {
+                TextButton(onClick = { DesktopPlayback.toggleFavorite() }, enabled = DesktopPlayback.currentTrack != null) {
+                    Text(if (DesktopPlayback.isFavorite(DesktopPlayback.currentTrack)) "♥" else "♡")
+                }
                 TextButton(onClick = DesktopPlayback::toggleShuffle) { Text(if (DesktopPlayback.shuffleEnabled) "🔀 ON" else "🔀") }
                 TextButton(onClick = DesktopPlayback::toggleRepeat) { Text(if (DesktopPlayback.repeatEnabled) "🔁 ON" else "🔁") }
+                TextButton(onClick = DesktopPlayback::toggleRepeatOne) { Text(if (DesktopPlayback.repeatOne) "🔂 ON" else "🔂") }
+                Text("Vol.")
+                Slider(value = DesktopPlayback.volume, onValueChange = DesktopPlayback::setVolume, modifier = Modifier.width(100.dp))
                 Button(onClick = DesktopPlayback::previous, enabled = DesktopPlayback.queue.isNotEmpty()) { Text("⏮") }
                 Button(
                     onClick = DesktopPlayback::playPause,
