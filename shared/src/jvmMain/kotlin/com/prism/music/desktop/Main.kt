@@ -299,18 +299,24 @@ private fun LibraryPage() {
         ) {
             Text("${DesktopPlayback.queue.size} piste(s)", modifier = Modifier.weight(1f), style = MaterialTheme.typography.titleMedium)
             Button(onClick = DesktopPlayback::chooseAndAdd) { Text("＋ Ajouter") }
+            Button(onClick = DesktopPlayback::chooseFolderAndAdd) { Text("＋ Dossier") }
             Button(onClick = DesktopPlayback::importPlaylist) { Text("Importer M3U") }
             Button(onClick = DesktopPlayback::exportPlaylist, enabled = DesktopPlayback.queue.isNotEmpty()) { Text("Exporter") }
+            TextButton(onClick = DesktopPlayback::clearQueue, enabled = DesktopPlayback.queue.isNotEmpty()) { Text("Vider la file") }
         }
         Button(onClick = DesktopPlayback::saveQueueAsPlaylist, enabled = DesktopPlayback.queue.isNotEmpty()) { Text("Enregistrer la file comme playlist") }
         Text("Playlists enregistrées", style = MaterialTheme.typography.titleLarge)
         DesktopPlayback.savedPlaylists().forEach { playlist ->
+            Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
             TrackRow(
                 title = playlist.nameWithoutExtension,
                 subtitle = "Playlist locale · ${playlist.name}",
                 active = false,
-                onPlay = { DesktopPlayback.loadSavedPlaylist(playlist) }
+                onPlay = { DesktopPlayback.loadSavedPlaylist(playlist) },
+                modifier = Modifier.weight(1f)
             )
+            TextButton(onClick = { DesktopPlayback.deleteSavedPlaylist(playlist) }) { Text("Supprimer") }
+            }
         }
         if (DesktopPlayback.queue.isEmpty()) {
             EmptyState("Aucun morceau pour le moment", "Ajoutez vos fichiers audio ou importez une playlist M3U.")
