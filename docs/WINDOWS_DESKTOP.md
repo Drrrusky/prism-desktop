@@ -7,7 +7,8 @@ The Windows desktop port is being developed in the `windows-port-source` branch.
 - Compose Desktop window with Home, Search, Library and Settings navigation.
 - Add local audio files through the Windows file picker.
 - Local playback queue with play/pause, previous/next, seeking and remove.
-- Queue and selected index are saved in Java Preferences and restored on launch.\n- Import and export local M3U/M3U8 playlists.\n- Playback automatically advances to the next item and stops at the end of the queue.
+- Queue and selected index are saved in Java Preferences and restored on launch.
+- Import and export local M3U/M3U8 playlists.\n- Playback automatically advances to the next item and stops at the end of the queue.
 - Java Sound playback with the MP3 SPI decoder dependency.
 
 Supported inputs are WAV, MP3, AIFF and AU, subject to Java Sound decoder support. The current implementation loads a selected track into a Java Sound Clip, so very large files can consume substantial memory.
