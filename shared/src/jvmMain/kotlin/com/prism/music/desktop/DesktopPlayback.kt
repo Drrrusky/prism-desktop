@@ -35,11 +35,11 @@ object DesktopPlayback {
     val favorites = mutableStateListOf<String>()
     var volume by mutableStateOf(preferences.getFloat("volume", 0.8f).coerceIn(0f, 1f))
         private set
-    var repeatOne by mutableStateOf(false)
+    var repeatOne by mutableStateOf(preferences.getBoolean("repeatOne", false))
         private set
-    var shuffleEnabled by mutableStateOf(false)
+    var shuffleEnabled by mutableStateOf(preferences.getBoolean("shuffleEnabled", false))
         private set
-    var repeatEnabled by mutableStateOf(false)
+    var repeatEnabled by mutableStateOf(preferences.getBoolean("repeatEnabled", false))
         private set
 
     init {
@@ -91,9 +91,18 @@ object DesktopPlayback {
         applyVolume()
     }
 
-    fun toggleRepeatOne() { repeatOne = !repeatOne }
-    fun toggleShuffle() { shuffleEnabled = !shuffleEnabled }
-    fun toggleRepeat() { repeatEnabled = !repeatEnabled }
+    fun toggleRepeatOne() {
+        repeatOne = !repeatOne
+        preferences.putBoolean("repeatOne", repeatOne)
+    }
+    fun toggleShuffle() {
+        shuffleEnabled = !shuffleEnabled
+        preferences.putBoolean("shuffleEnabled", shuffleEnabled)
+    }
+    fun toggleRepeat() {
+        repeatEnabled = !repeatEnabled
+        preferences.putBoolean("repeatEnabled", repeatEnabled)
+    }
 
     private fun applyVolume() {
         val active = clip ?: return
@@ -148,7 +157,7 @@ object DesktopPlayback {
     }
 
     fun addFiles(files: List<File>) {
-        val accepted = files.filter { it.isFile && it.extension.lowercase() in supportedExtensions }
+        val accepted = files.filter { it.isFile && it.extension.lowercase() in supportedExtensions }.distinct()
         queue.addAll(accepted.filterNot { it in queue })
         errorMessage = null
         if (currentIndex < 0 && queue.isNotEmpty()) currentIndex = 0
