@@ -236,7 +236,7 @@ object DesktopPlayback {
                 javax.swing.SwingUtilities.invokeLater {
                     if (clip === newClip) {
                         isPlaying = false
-                        if (queue.size > 1 && currentIndex >= 0) next()
+                        if (currentIndex in 0 until queue.lastIndex) playIndex(currentIndex + 1)
                     }
                 }
             }
