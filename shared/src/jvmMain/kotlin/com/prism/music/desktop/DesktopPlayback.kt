@@ -30,7 +30,7 @@ object DesktopPlayback {
     private val preferences = Preferences.userNodeForPackage(DesktopPlayback::class.java)
 
     init {
-        val restored = preferences.get("queue", "").split("\\n")
+        val restored = preferences.get("queue", "").split("\n")
             .filter { it.isNotBlank() }
             .map(::File)
             .filter { it.isFile && it.extension.lowercase() in supportedExtensions }
@@ -39,7 +39,7 @@ object DesktopPlayback {
     }
 
     private fun persistQueue() {
-        preferences.put("queue", queue.joinToString("\\n") { it.absolutePath })
+        preferences.put("queue", queue.joinToString("\n") { it.absolutePath })
         preferences.putInt("currentIndex", currentIndex)
     }
 
@@ -65,6 +65,7 @@ object DesktopPlayback {
         queue.addAll(accepted.filterNot { it in queue })
         errorMessage = null
         if (currentIndex < 0 && queue.isNotEmpty()) currentIndex = 0
+        persistQueue()
     }
 
     fun importPlaylist() {
@@ -159,6 +160,7 @@ object DesktopPlayback {
     fun playIndex(index: Int) {
         if (index !in queue.indices) return
         currentIndex = index
+        persistQueue()
         playCurrent()
     }
 
@@ -192,6 +194,7 @@ object DesktopPlayback {
         } else if (index < currentIndex) {
             currentIndex--
         }
+        persistQueue()
     }
 
     fun seekToFraction(fraction: Float) {
