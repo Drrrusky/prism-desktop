@@ -211,6 +211,20 @@ object DesktopPlayback {
         } catch (e: Exception) { errorMessage = e.message ?: "Impossible d’enregistrer la playlist." }
     }
 
+    fun deleteSavedPlaylist(playlist: File) {
+        try {
+            val normalized = playlist.toPath().toAbsolutePath().normalize()
+            if (normalized.parent != playlistDirectory.toAbsolutePath().normalize()) {
+                errorMessage = "Cette playlist ne se trouve pas dans le dossier Prism."
+                return
+            }
+            Files.deleteIfExists(normalized)
+            errorMessage = null
+        } catch (e: Exception) {
+            errorMessage = e.message ?: "Impossible de supprimer la playlist."
+        }
+    }
+
     fun loadSavedPlaylist(playlist: File) {
         try {
             val base = playlist.toPath().toAbsolutePath().parent
