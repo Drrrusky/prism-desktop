@@ -28,13 +28,17 @@ jobs:
             platforms;android-37
             build-tools;37.0.0
 
-      - name: Build desktop JVM module
+      - name: Build Windows desktop distribution
         shell: pwsh
-        run: .\gradlew.bat :shared:compileKotlinJvm :shared:jvmJar
+        run: .\gradlew.bat :shared:createDistributable
 
-      - name: Upload desktop JVM jar
+      - name: Archive Windows desktop app
+        shell: pwsh
+        run: Compress-Archive -Path shared\build\compose\binaries\main\app\* -DestinationPath Prism-Desktop-Windows.zip -Force
+
+      - name: Upload Windows desktop app
         uses: actions/upload-artifact@v4
         with:
-          name: Prism-Desktop-JVM
-          path: shared/build/libs/*jvm*.jar
-          if-no-files-found: warn
+          name: Prism-Desktop-Windows
+          path: Prism-Desktop-Windows.zip
+          if-no-files-found: error
