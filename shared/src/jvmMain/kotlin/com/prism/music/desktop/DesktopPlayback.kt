@@ -11,6 +11,7 @@ import java.nio.file.Path
 import javax.sound.sampled.AudioSystem
 import javax.sound.sampled.Clip
 import javax.swing.JFileChooser
+import javax.swing.JOptionPane
 import javax.swing.filechooser.FileNameExtensionFilter
 
 /**
@@ -105,6 +106,54 @@ object DesktopPlayback {
         } catch (e: Exception) {
             errorMessage = e.message ?: "Impossible d’importer cette playlist."
         }
+    }
+
+    private val playlistDirectory = Path.of(System.getProperty("user.home"), ".prism", "playlists")
+
+    fun savedPlaylists(): List<File> = try {
+        if (Files.isDirectory(playlistDirectory)) {
+            Files.list(playlistDirectory).use { stream ->
+                stream.filter { Files.isRegularFile(it) && it.fileName.toString().endsWith(".m3u8", true) }
+                    .map(Path::toFile).sorted(compareBy { it.name.lowercase() }).toList()
+            }
+        } else emptyList()
+    } catch (_: Exception) { emptyList() }
+
+    fun saveQueueAsPlaylist() {
+        if (queue.isEmpty()) {
+            errorMessage = "Ajoutez des titres avant d’enregistrer une playlist."
+            return
+        }
+        val name = JOptionPane.showInputDialog(null, "Nom de la playlist", "Nouvelle playlist", JOptionPane.PLAIN_MESSAGE)
+            ?.trim()?.takeIf { it.isNotEmpty() } ?: return
+        try {
+            Files.createDirectories(playlistDirectory)
+            val safeName = name.replace(Regex("[\\\\/:*?\"<>|]"), "_").trim().trimEnd('.')
+            if (safeName.isBlank()) { errorMessage = "Nom de playlist invalide."; return }
+            Files.write(playlistDirectory.resolve("$safeName.m3u8"), buildList {
+                add("#EXTM3U")
+                queue.forEach { add(it.absolutePath) }
+            }, Charsets.UTF_8)
+            errorMessage = null
+        } catch (e: Exception) { errorMessage = e.message ?: "Impossible d’enregistrer la playlist." }
+    }
+
+    fun loadSavedPlaylist(playlist: File) {
+        try {
+            val base = playlist.toPath().toAbsolutePath().parent
+            val tracks = Files.readAllLines(playlist.toPath()).asSequence()
+                .map(String::trim).map { it.removePrefix("\\uFEFF") }
+                .filter { it.isNotEmpty() && !it.startsWith("#") }
+                .map { entry -> val path = Path.of(entry); if (path.isAbsolute) path.toFile() else base.resolve(path).normalize().toFile() }
+                .filter { it.isFile && it.extension.lowercase() in supportedExtensions }.toList()
+            stopAndClose()
+            queue.clear()
+            queue.addAll(tracks)
+            currentIndex = if (queue.isEmpty()) -1 else 0
+            persistQueue()
+            if (queue.isNotEmpty()) playCurrent()
+            errorMessage = if (queue.isEmpty()) "Playlist vide ou fichiers introuvables." else null
+        } catch (e: Exception) { errorMessage = e.message ?: "Impossible de charger la playlist." }
     }
 
     fun exportPlaylist() {
