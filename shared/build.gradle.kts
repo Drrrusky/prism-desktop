@@ -34,5 +34,9 @@ kotlin {
 compose.desktop {
     application {
         mainClass = "com.prism.music.desktop.MainKt"
+        nativeDistributions {
+            packageName = "Prism"
+            packageVersion = "1.0.0"
+        }
     }
 }
