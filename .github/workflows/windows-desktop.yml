@@ -7,6 +7,10 @@ on:
     branches: [windows-port-source]
   workflow_dispatch:
 
+concurrency:
+  group: windows-desktop-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   desktop-jvm:
     runs-on: windows-latest
