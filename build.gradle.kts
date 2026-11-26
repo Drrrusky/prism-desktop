@@ -1,14 +1,37 @@
+
+
 plugins {
-    id("com.android.application") version "9.3.1" apply false
-    // :baselineprofile (1.7.4): scripted journeys through Prism that write its baseline profile and time its frames.
-    id("com.android.test") version "9.3.1" apply false
-    id("androidx.baselineprofile") version "1.5.0" apply false
-    id("org.jetbrains.kotlin.android") version "2.4.20" apply false
-    id("org.jetbrains.kotlin.plugin.compose") version "2.4.20" apply false
-    id("org.jetbrains.kotlin.plugin.serialization") version "2.4.20" apply false
-    id("com.google.devtools.ksp") version "2.3.12" apply false
-    id("androidx.room") version "2.8.5" apply false
-    id("org.jetbrains.kotlin.multiplatform") version "2.4.20" apply false
-    id("org.jetbrains.compose") version "1.12.2" apply false
-    id("com.android.kotlin.multiplatform.library") version "9.3.1" apply false
+    id("org.jetbrains.kotlin.multiplatform")
+    id("com.android.kotlin.multiplatform.library")
+    id("org.jetbrains.compose")
+    id("org.jetbrains.kotlin.plugin.compose")
+}
+
+kotlin {
+    android {
+        namespace = "com.prism.music.shared"
+        compileSdk = 37
+        minSdk = 26
+    }
+
+    jvm()
+
+    sourceSets {
+        commonMain.dependencies {
+            implementation("org.jetbrains.compose.runtime:runtime:1.12.2")
+            implementation("org.jetbrains.compose.foundation:foundation:1.12.2")
+            implementation("org.jetbrains.compose.material3:material3:1.12.0-alpha03")
+            implementation("org.jetbrains.compose.ui:ui:1.12.2")
+        }
+
+        jvmMain.dependencies {
+            implementation(compose.desktop.currentOs)
+        }
+    }
+}
+
+compose.desktop {
+    application {
+        mainClass = "com.prism.music.desktop.MainKt"
+    }
 }
