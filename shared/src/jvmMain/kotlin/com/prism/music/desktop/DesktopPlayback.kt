@@ -233,7 +233,12 @@ object DesktopPlayback {
             if (event.type == javax.sound.sampled.LineEvent.Type.STOP &&
                 newClip.microsecondPosition >= newClip.microsecondLength
             ) {
-                isPlaying = false
+                javax.swing.SwingUtilities.invokeLater {
+                    if (clip === newClip) {
+                        isPlaying = false
+                        if (queue.size > 1 && currentIndex >= 0) next()
+                    }
+                }
             }
         }
         clip = newClip
