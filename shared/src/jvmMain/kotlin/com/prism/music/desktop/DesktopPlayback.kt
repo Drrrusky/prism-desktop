@@ -37,6 +37,10 @@ object DesktopPlayback {
         private set
     var repeatOne by mutableStateOf(false)
         private set
+    var shuffleEnabled by mutableStateOf(false)
+        private set
+    var repeatEnabled by mutableStateOf(false)
+        private set
 
     init {
         val restored = try {
@@ -88,6 +92,8 @@ object DesktopPlayback {
     }
 
     fun toggleRepeatOne() { repeatOne = !repeatOne }
+    fun toggleShuffle() { shuffleEnabled = !shuffleEnabled }
+    fun toggleRepeat() { repeatEnabled = !repeatEnabled }
 
     private fun applyVolume() {
         val active = clip ?: return
@@ -267,7 +273,14 @@ object DesktopPlayback {
 
     fun next() {
         if (queue.isEmpty()) return
-        playIndex((currentIndex + 1).mod(queue.size))
+        val nextIndex = if (shuffleEnabled && queue.size > 1) {
+            (queue.indices.filter { it != currentIndex }).random()
+        } else if (repeatEnabled) {
+            (currentIndex + 1).mod(queue.size)
+        } else {
+            (currentIndex + 1).coerceAtMost(queue.lastIndex)
+        }
+        playIndex(nextIndex)
     }
 
     fun previous() {
@@ -345,7 +358,9 @@ object DesktopPlayback {
                             isPlaying = true
                         } else {
                             isPlaying = false
-                            if (currentIndex in 0 until queue.lastIndex) playIndex(currentIndex + 1)
+                            if (shuffleEnabled && queue.size > 1) next()
+                            else if (currentIndex < queue.lastIndex) playIndex(currentIndex + 1)
+                            else if (repeatEnabled && queue.isNotEmpty()) playIndex(0)
                         }
                     }
                 }
