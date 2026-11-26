@@ -79,7 +79,8 @@ private fun PrismDesktopApp() {
                 Sidebar(
                     selected = page,
                     onNavigate = { page = it },
-                    onAdd = DesktopPlayback::chooseAndAdd
+                    onAdd = DesktopPlayback::chooseAndAdd,
+                    onAddFolder = DesktopPlayback::chooseFolderAndAdd
                 )
                 Divider(
                     modifier = Modifier.fillMaxHeight().width(1.dp),
@@ -135,7 +136,8 @@ private fun PrismDesktopApp() {
 private fun Sidebar(
     selected: DesktopPage,
     onNavigate: (DesktopPage) -> Unit,
-    onAdd: () -> Unit
+    onAdd: () -> Unit,
+    onAddFolder: () -> Unit
 ) {
     Column(
         modifier = Modifier.width(220.dp).fillMaxHeight().padding(18.dp),
@@ -171,6 +173,9 @@ private fun Sidebar(
                 Button(onClick = onAdd, modifier = Modifier.fillMaxWidth()) {
                     Text("＋ Ajouter des titres")
                 }
+                TextButton(onClick = onAddFolder, modifier = Modifier.fillMaxWidth()) {
+                    Text("＋ Ajouter un dossier")
+                }
             }
         }
     }
@@ -195,6 +200,7 @@ private fun HomePage(onSearch: () -> Unit, onLibrary: () -> Unit) {
                 )
                 Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                     Button(onClick = DesktopPlayback::chooseAndAdd) { Text("＋ Ajouter de la musique") }
+                    Button(onClick = DesktopPlayback::chooseFolderAndAdd) { Text("＋ Importer un dossier") }
                     Button(onClick = onLibrary) { Text("Ouvrir la bibliothèque") }
                 }
             }
